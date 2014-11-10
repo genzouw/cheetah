@@ -11,13 +11,17 @@ s3_output_dir="s3://daito-sandbox/products"
 [ ! -d "${output_dir}" ] && mkdir -p "${output_dir}"
 [ ! -d "${backup_dir}" ] && mkdir -p "${backup_dir}"
 
-echo "[$(date +"%Y-%m-%d %H:%M")] start."
 find ${shared_dir} -type f -iname '*.csv' | grep '[0-9]\{8\}\-[0-9]\{4\}.csv' | sort | head -n 1 | while read csvfile; do
+	echo "[$(date +"%Y-%m-%d %H:%M")] start."
+
 	endfile="${csvfile}.end"
 
 	if [[ ! -f "${endfile}" ]]; then
 		continue;
 	fi
+
+	mv "${csvfile}"{,.end} "${backup_dir}/"
+	csvfile="${backup_dir}/$(basename ${csvfile})"
 
 	echo "[$(date +"%Y-%m-%d %H:%M")] end file exist.($(echo $endfile))"
 
@@ -44,6 +48,5 @@ find ${shared_dir} -type f -iname '*.csv' | grep '[0-9]\{8\}\-[0-9]\{4\}.csv' | 
 
 	echo "[$(date +"%Y-%m-%d %H:%M")] end sync."
 
-	mv "${csvfile}"{,.end} "${backup_dir}/"
+	echo "[$(date +"%Y-%m-%d %H:%M")] end."
 done
-echo "[$(date +"%Y-%m-%d %H:%M")] end."
