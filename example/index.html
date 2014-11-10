@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width-device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+		<!-- Bootstrap -->
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="//friends-map.net/test/css/main.css" type="text/css" />
+		<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+			<script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+		<title>納期モジュール - dev.daito</title>
+		<style>
+		footer {
+			margin-top: 1em;
+			background-color: #f5f5f5;
+			text-align: center;
+		}
+		#lead-time-table {
+			text-align: center;
+		}
+		</style>
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	</head>
+
+	<body>
+		<nav class="navbar navbar-default">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="">dev.daito</a>
+			</div>
+			<div class="collapse navbar-collapse target">
+				<ul class="nav navbar-nav"></ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="javascript:void(0);">dev.daito</a></li>
+				</ul>
+			</div>
+		</nav>
+
+		<div class="container-fluid">
+			<h2>納期モジュール</h2>
+
+			<div>
+			<p> 以下のいずれかの商品番号をテストデータとして用意済み。 </p>
+			<p><strong style="color:red;">クリックしてみて！</strong></p>
+			<ul>
+			<li><a href="./index.html?product-code=a01">a01(在庫無しケース)</a></li>
+			<li><a href="./index.html?product-code=b01">b01(在庫有りケース)</a></li>
+			</ul>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-8 col-sm-offset-2 col-sm-offset-2" id="lead-time-table">
+				</div>
+			</div>
+
+		</div>
+		<script src="//s3-ap-northeast-1.amazonaws.com/daito-lead-time-info/js/xhr.js"></script>
+		<script src="//s3-ap-northeast-1.amazonaws.com/daito-lead-time-info/js/cheetah.js"></script>
+		<script>
+
+			var queryString = (function getUrlVars() {
+				var vars = [], hash;
+				var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+				for(var i = 0; i < hashes.length; i++) {
+					hash = hashes[i].split('=');
+					vars.push(hash[0]);
+					vars[hash[0]] = hash[1];
+				}
+				return vars;
+			})();
+
+			// こちらはJsonファイルの内容を単純に列挙する例
+			$.outputLeadTimes(
+				// 商品番号
+				queryString['product-code'],
+				// 正常時の処理、異常時の処理を記載
+				{
+					"success":function( json, status ) {
+						// この例では、 div#lead-time-table に取得したコンテンツを出力している
+
+						// ↓↓↓↓↓ここからHTML要素出力ロジック↓↓↓↓↓
+						var table = $("<table />")
+								.append(
+									$("<caption />").text('出荷予定表('+json["データ出力日時"]+' 現在)')
+								)
+								.append(
+									$("<colgroup />")
+										.append($("<col />"))
+										.append($("<col />"))
+										.append($("<col />"))
+								)
+								.append(
+									$("<thead />").append(
+										$("<tr />")
+											.append($("<th />").text('在庫状況'))
+											.append($("<th />").text('在庫数'))
+											.append($("<th />").text('発送日目安'))
+									)
+								)
+								.append(
+									(json["在庫数"] == null ?
+										$("<tbody />")
+											.append(
+												$("<tr />")
+													.append($("<td />").text(json["在庫状況"]))
+													.append($("<td />").text("-"))
+													.append($("<td />").text(json["発送日目安"]))
+											) :
+										$("<tbody />")
+											.append(
+												$("<tr />")
+													.append($("<td />").text(json["在庫時在庫状況"]))
+													.append($("<td />").text(json["在庫数"]))
+													.append($("<td />").text(json["在庫時発送日目安"]))
+											)
+											.append(
+												$("<tr />")
+													.append($("<td />").text(json["在庫状況"]))
+													.append($("<td />").text("-"))
+													.append($("<td />").text(json["発送日目安"]))
+											)
+									)
+								);
+
+						$("#lead-time-table")
+							.find('*').remove().end()
+							.append(table);
+						// ↑↑↑↑↑ここまでHTML要素出力ロジック↑↑↑↑↑
+
+					},
+					"error":function( data, status ) {
+						alert('エラー！');
+					}
+				}
+			);
+
+		</script>
+
+
+		<footer id="footer">
+			<p>Copyright © 2014-2014 genzouw All Rights Reserved.</p>
+			<p>( twitter:<a href="https://twitter.com/genzouw">@genzouw</a> , facebook:<a href="https://www.facebook.com/genzouw">genzouw</a>, mailto:<a href="mailto:genzouw@gmail.com">genzouw@gmail.com</a> )</p>
+		</footer>
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	</body>
+</html>
