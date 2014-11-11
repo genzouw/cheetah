@@ -20,7 +20,8 @@ find ${shared_dir} -type f -iname '*.csv' | grep '[0-9]\{8\}\-[0-9]\{4\}.csv' | 
 		continue;
 	fi
 
-	mv "${csvfile}"{,.end} "${backup_dir}/"
+	rm "${endfile}" &
+	mv "${csvfile}" "${backup_dir}/"
 	csvfile="${backup_dir}/$(basename ${csvfile})"
 
 	echo "[$(date +"%Y-%m-%d %H:%M")] end file exist.($(echo $endfile))"
@@ -39,6 +40,8 @@ find ${shared_dir} -type f -iname '*.csv' | grep '[0-9]\{8\}\-[0-9]\{4\}.csv' | 
 		cat "${tmpfile}" | /usr/bin/jq --compact-output '.[]|.["商品番号"]|=tonumber|.["入荷予定区分"]|="z"+.|.["在庫時入荷予定区分"]|="z"+.|.' > "${output_dir}/${product_no}.json"
 		rm "${tmpfile}"
 	done
+
+	gzip "${csvfile}" &
 
 	echo "{ \"update_date\":\"${update_date}\" }" > "${output_dir}/update_date.json"
 
